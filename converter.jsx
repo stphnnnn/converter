@@ -71,7 +71,7 @@ function getInput() {
 }
 
 function pickFormats() {
-  var win = new Window('dialog', 'Coverter');
+  var win = new Window('dialog', 'Converter');
   win.alignChildren = 'fill';
 
   win.input = win.add('group', undefined)
