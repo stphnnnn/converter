@@ -1,7 +1,7 @@
 /*
 Name: Converter
 Description: Convert .AI files to .PNGs, .SVGs and .EPSs
-Version: 1.0.0
+Version: 1.0.1
 Author: Steve Burtenshaw
 Website: http://steveburtenshaw.com
 */
