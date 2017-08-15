@@ -1,7 +1,7 @@
 /*
 Name: Converter
 Description: Convert .AI files to .PNGs, .SVGs and .EPSs
-Version: 1.0.0
+Version: 1.0.1
 Author: Steve Burtenshaw
 Website: http://steveburtenshaw.com
 */
@@ -26,8 +26,7 @@ var fileFormats = [
       return options
     },
     saveFile: function(doc) {
-      $.writeln('Trying to export', this.name)
-      doc.exportFile(getNewName(doc.name, this.extension), ExportType.PNG24, this.getOptions())
+      doc.exportFile(getNewName(doc.name, this), ExportType.PNG24, this.getOptions())
     }
   }, {
     name: 'SVG',
@@ -39,7 +38,7 @@ var fileFormats = [
       return options
     },
     saveFile: function(doc) {
-      doc.exportFile(getNewName(doc.name, this.extension), ExportType.SVG, this.getOptions())
+      doc.exportFile(getNewName(doc.name, this), ExportType.SVG, this.getOptions())
     }
   }, {
     name: 'EPS',
@@ -51,18 +50,19 @@ var fileFormats = [
       return options
     },
     saveFile: function(doc) {
-      doc.saveAs(getNewName(doc.name, this.extension), this.getOptions());
+      doc.saveAs(getNewName(doc.name, this), this.getOptions());
     }
   }
 ]
 
-function getNewName(name, extension) {
-  var newName = '';
-  for (i = 0; name[i] != '.'; i++) {
-    newName += name[i];
+function getNewName(name, format) {
+  var newFolder = Folder(outputFolder + '/' + format.name);
+  if (!newFolder.exists) {
+    newFolder.create();
   }
-  newName += extension;
-  saveInFile = new File(outputFolder + '/' + newName);
+  var newName = name.substr(0, name.lastIndexOf('.'));
+  newName += format.extension;
+  saveInFile = new File(newFolder + '/' + newName);
   return saveInFile;
 }
 
@@ -89,7 +89,7 @@ function pickFormats() {
   win.checkboxes = win.add('panel', undefined, 'Formats')
   win.checkboxes.orientation = 'row'
 
-  for (i = 0; i < fileFormats.length; i++) {
+  for (var i = 0; i < fileFormats.length; i++) {
     win.checkboxes[fileFormats[i].name] = win.checkboxes.add('checkbox', undefined, fileFormats[i].name)
   }
 
@@ -111,7 +111,7 @@ function pickFormats() {
   win.buttons.convertButton.onClick = function() {
     var checkBoxValues = []
     if (inputFolder != null && outputFolder != null) {
-      for (i = 0; i < fileFormats.length; i++) {
+      for (var i = 0; i < fileFormats.length; i++) {
         checkBoxValues.push(win.checkboxes[fileFormats[i].name].value)
       }
       convert(checkBoxValues)
@@ -127,25 +127,25 @@ function pickFormats() {
 }
 
 function convert(checkBoxValues) {
-  if (inputFolder) {
-    var files = new Array()
-    files = inputFolder.getFiles(matchFileType)
-    if (files.length > 0) {
-      for (i = 0; i < files.length; i++) {
-        currentFile = app.open(files[i])
-        for (j = 0; j < fileFormats.length; j++) {
-          if (checkBoxValues[j] == 1) {
-            fileFormats[j].saveFile(currentFile)
-          }
+  var files = new Array()
+  files = inputFolder.getFiles(matchFileType)
+  if (files.length > 0) {
+    for (var i = 0; i < files.length; i++) {
+      currentFile = app.open(files[i])
+      for (var j = 0; j < fileFormats.length; j++) {
+        if (checkBoxValues[j] == 1) {
+          fileFormats[j].saveFile(currentFile)
         }
-        currentFile.close(SaveOptions.DONOTSAVECHANGES)
       }
+      currentFile.close(SaveOptions.DONOTSAVECHANGES)
     }
   }
 }
-
 function getInput() {
   inputFolder = Folder.selectDialog( 'Select the SOURCE folder...', '~' );
+  if (outputFolder == null) {
+    outputFolder = inputFolder;
+  }
 }
 
 function getOutput() {
